@@ -16,7 +16,7 @@
 %token <i> NUM
 %token <s> ID
 
-%token LET IN PRINT LOAD
+%token LET IN PRINT LOAD DIR EXIT HELP
     ALPHA BETA BETA_
     IOTA DELTA EOL EOF_
 
@@ -57,6 +57,8 @@ stmt: LET ID '=' term_list
             print_term($1);
             printf("\n");
         }
+    | DIR { dir(); }
+    | HELP { help(); }
     ;
 
 term_list:term 
@@ -82,6 +84,10 @@ term: ID
         {
             $$ = beta($2);
         }
+    | ALPHA term_list
+        {
+            $$ = alpha($2);
+        }
     ;
 
 calc_list:
@@ -97,6 +103,10 @@ calc_list:
     | calc_list EOF_ {
         yypop_buffer_state();
     }
+    | calc_list EXIT {
+        printf("Leaving BASIC.\n");
+        return 0;
+    }
     ;
 %%
 
@@ -110,6 +120,6 @@ void yyerror(const char *s,...)
 }
 
 int main(){
-    printf("> ");
+    printf("BASIC, version 0.0.1: http://home.ustc.edu.cn/~xushijie/  <help> for help\n> ");
     return yyparse();
 }

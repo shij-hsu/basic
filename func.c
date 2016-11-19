@@ -66,6 +66,16 @@ struct term *copy_term(struct term *origin){
     new_term->r=copy_term(origin->r);
     return new_term;
 }
+void delete_term(struct term* t){
+    if(!t)return;
+    if(t->nodetype==VAR){
+        free(t);return;
+    }
+    else {
+        delete_term(t->l);delete_term(t->r);
+        free(t);
+    }
+}
 int compare_term(struct term *t1,struct term *t2){
     if(t1==NULL){
         if(t2==NULL)return 1;
@@ -88,48 +98,86 @@ int compare_term(struct term *t1,struct term *t2){
 /* e1 { v/e2 } =
     e1.type=var => if e1=v then e2 else e1
     e1.type=app => e1 = e11 e22 => e11 {v/e2} e22 {v/e2}
-    e1.type=bas => e1 = \x.e11 => if v=x then e1 else \x.(e11 {v/e2})
+    e1.type=abs => e1 = \x.e11 => if v=x then e1 else \x.(e11 {v/e2})
 */
 struct term *subst(struct term *e1, struct symbol *v, struct term *e2){
     char *v_name=v->name;
     if(e1->nodetype==VAR){
-        if(!strcmp(v_name,e1->sym->name))
-            return copy_term(e2);
-        else return copy_term(e1);
+        if(!strcmp(v_name,e1->sym->name)){
+            return e2;
+        }
+        else{
+            return e1;
+        }
     }
     else if(e1->nodetype==APP){
         return new_app_term(subst(e1->l,v,e2),subst(e1->r,v,e2));
     }
     else /*if(e1->nodetype==ABS)*/{
-        if(!strcmp(v_name,e1->sym->name))
-            return copy_term(e1);
-        else return new_abs_term(e1->sym,subst(e1->l,v,e2));
+        if(!strcmp(v_name,e1->sym->name)){
+            return e1;
+        }
+        else if(free_in_term(e2,e1->sym)){
+            e1 = alpha(e1);
+        }
+        return new_abs_term(e1->sym,subst(e1->l,v,e2));
     }
 }
-
+/* 
+    alpha 变换， 将term中所有约束变量替换为另一个变量
+*/
+struct term *alpha(struct term* e){
+    if(e->nodetype==ABS){
+        static int anoym=0;
+        char anoym_name[13]={0};
+        sprintf(anoym_name,"?%d",anoym);
+        struct symbol *sym=lookup(anoym_name);
+        anoym++;
+        return new_abs_term(sym,subst(e->l,e->sym,new_var_term(sym)));
+    }else return e;
+}
+/* 
+    v is free in e 
+    v.type=var => v==e
+    v.type=abs => v->sym!=e || free_in_term(e->l,v)
+    v.tyoe=app => free_in_term(e->l,v) && free_in_term(e->r,v)
+*/
+int free_in_term(struct term* e,struct symbol *v){
+    if(!e||!v)return 0;
+    switch (e->nodetype)
+    {
+        case VAR:return (!strcmp(e->sym->name,v->name));
+        case ABS:return (strcmp(e->sym->name,v->name) || free_in_term(e->l,v));
+        case APP:return (free_in_term(e->l,v) || free_in_term(e->r,v));
+    default:
+        break;
+    }
+}
 /* (fun v=>e1) e2=(beta)=> e1 {v/e2} */
 struct term *beta(struct term *t){
     if(!t)return NULL;
-    if(t->nodetype!=APP)return copy_term(t);
+    if(t->nodetype!=APP)
+        return t;
     else{
         struct term* fun=t->l;
         if(!fun){
-            return copy_term(t);
+            return t;
         }
         if(fun->nodetype!=ABS){
-            return copy_term(t);
+            return t;
         }
         else{
             return subst(fun->l,fun->sym,t->r);
         }
     }
 }
+/* beta_s = multi_step beta */
 struct term *beta_s(struct term *t){
     if(!t)return NULL;
     struct term *rep=NULL;
     switch (t->nodetype)
     {
-        case VAR:rep = copy_term(t); break;
+        case VAR: rep=t; break;
         case ABS:rep = new_abs_term(t->sym,beta_s(t->l));break;
         case APP:
             rep = beta(t);
@@ -146,8 +194,46 @@ struct term *beta_s(struct term *t){
     }
     return rep;
 }
-
-
+/* Show all top terms in the symbol table */
+int dir(){
+    int i=0;
+    int count=0;
+    for(i=0;i<NHASH;i++){
+        if(symtab[i].type=='T'){
+            printf("%s\t",symtab[i].name);
+            count++;
+            if(count%8==0)printf("\n");
+        }
+    }
+    return printf("\nOK, terms showed: total %d.\n",count);
+}
+/* Show help for users */
+int help(){
+    char info[]=
+        "       Commands available from the prompt:\n"
+        "   <term>                 evaluate/run <term>\n"
+        "   let id = <term>        bind an id with <term>\n"
+        "   print id               print the term binded with id\n"
+        "   load id                load the modules named 'id.k'\n"
+        "   dir                    show all terms in the current environment\n"
+        "   help                   print help text\n"
+        "   exit                   exit the prompt\n"
+        "                                              \n"
+        "       Grammar for untyped lambda calculli:\n"
+        "   <term>  ::= id\n"
+        "           ::= \\id.<term>\n"
+        "           ::= <term> <term>\n"
+        "           ::= beta <term>\n"
+        "           ::= beta* <term>\n"
+        "           ::= alpha <term>\n"
+        "   Here application is left-associated, while it has the highest \n"
+        "   priority, these means:\n"
+        "       f x y == (f x) y, not f (x y);\n"
+        "       \\x.f x == \\x.(f x), not (\\x.f) x;\n"
+        "   'beta' evaluate for beta-reduction, so as 'alpha', and 'beta*'\n"
+        "    is the multi-steps version of it.\n";
+    return printf("%s\n",info);
+}
 int print_term(struct term *t){
     if(!t)printf("[INVALID]");
     switch (t->nodetype)
@@ -176,4 +262,5 @@ int print_term(struct term *t){
     default:
         break;
     }
+    return 0;
 }

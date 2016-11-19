@@ -10,6 +10,10 @@
 "load"                  { return LOAD; }
 "beta"                  { return BETA; }
 "beta*"                 { return BETA_; }
+"alpha"                 { return ALPHA; }
+"dir"                   { return DIR; }
+"exit"                  { return EXIT; }
+"help"                  { return HELP; }
 
 
 [a-zA-Z_][a-zA-Z_0-9]*  { yylval.s = lookup(yytext); return ID; }

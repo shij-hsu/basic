@@ -20,13 +20,10 @@ struct symbol{
     char type;          //是否处于顶层 T - top, B - bind, N - unknow
 };
 
-#define NHASH 9997
-struct symbol symtab[NHASH];
-struct symbol Gamma[NHASH];
-struct symbol *lookup(char *);
-
 typedef enum _TYPE{
-    APP=256,ABS,VAR,
+    APP=256,ABS,VAR,    //APP - application
+                        //ABS - abstract
+                        //VAR - varibale
 }TYPE;
 
 struct term{
@@ -36,14 +33,25 @@ struct term{
     struct term *r;
 };
 
+#define NHASH 9997
+struct symbol symtab[NHASH];
+struct symbol *lookup(char *);
+
 struct term *new_var_term(struct symbol*s);
 struct term *new_abs_term(struct symbol *s, struct term *t);
 struct term *new_app_term(struct term *l, struct term *r);
 struct term *copy_term(struct term *origin);
+void delete_term(struct term* t);
 int compare_term(struct term *t1,struct term *t2);
 struct term* subst(struct term *e1, struct symbol *v, struct term *e2);
 
 struct term *beta(struct term *t);
 struct term *beta_(struct term *t);
 struct term *beta_s(struct term *t);
+struct term* alpha(struct term* e);
+int dir();
+int help();
+
+
+int free_in_term(struct term* e,struct symbol *v);
 int print_term(struct term *t);

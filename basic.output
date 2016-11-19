@@ -2,14 +2,14 @@ Terminals unused in grammar
 
    NUM
    IN
-   ALPHA
    IOTA
    DELTA
 
 
-状态 21 conflicts: 5 shift/reduce
-状态 22 conflicts: 5 shift/reduce
-状态 31 conflicts: 5 shift/reduce
+状态 25 conflicts: 6 shift/reduce
+状态 26 conflicts: 6 shift/reduce
+状态 27 conflicts: 6 shift/reduce
+状态 36 conflicts: 6 shift/reduce
 
 
 语法
@@ -20,66 +20,73 @@ Terminals unused in grammar
     2     | PRINT ID
     3     | LOAD ID
     4     | term_list
+    5     | DIR
+    6     | HELP
 
-    5 term_list: term
-    6          | term_list term
+    7 term_list: term
+    8          | term_list term
 
-    7 term: ID
-    8     | '\\' ID '.' term_list
-    9     | '(' term_list ')'
-   10     | BETA_ term_list
-   11     | BETA term_list
+    9 term: ID
+   10     | '\\' ID '.' term_list
+   11     | '(' term_list ')'
+   12     | BETA_ term_list
+   13     | BETA term_list
+   14     | ALPHA term_list
 
-   12 calc_list: %empty
-   13          | calc_list EOL
-   14          | calc_list stmt EOL
-   15          | calc_list error EOL
-   16          | calc_list EOF_
+   15 calc_list: %empty
+   16          | calc_list EOL
+   17          | calc_list stmt EOL
+   18          | calc_list error EOL
+   19          | calc_list EOF_
+   20          | calc_list EXIT
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
-'(' (40) 9
-')' (41) 9
-'.' (46) 8
+'(' (40) 11
+')' (41) 11
+'.' (46) 10
 '=' (61) 1
-'\\' (92) 8
-error (256) 15
+'\\' (92) 10
+error (256) 18
 NUM (258)
-ID (259) 1 2 3 7 8
+ID (259) 1 2 3 9 10
 LET (260) 1
 IN (261)
 PRINT (262) 2
 LOAD (263) 3
-ALPHA (264)
-BETA (265) 11
-BETA_ (266) 10
-IOTA (267)
-DELTA (268)
-EOL (269) 13 14 15
-EOF_ (270) 16
+DIR (264) 5
+EXIT (265) 20
+HELP (266) 6
+ALPHA (267) 14
+BETA (268) 13
+BETA_ (269) 12
+IOTA (270)
+DELTA (271)
+EOL (272) 16 17 18
+EOF_ (273) 19
 
 
 Nonterminals, with rules where they appear
 
-$accept (21)
+$accept (24)
     左： 0
-stmt (22)
-    左： 1 2 3 4, 右： 14
-term_list (23)
-    左： 5 6, 右： 1 4 6 8 9 10 11
-term (24)
-    左： 7 8 9 10 11, 右： 5 6
-calc_list (25)
-    左： 12 13 14 15 16, 右： 0 13 14 15 16
+stmt (25)
+    左： 1 2 3 4 5 6, 右： 17
+term_list (26)
+    左： 7 8, 右： 1 4 8 10 11 12 13 14
+term (27)
+    左： 9 10 11 12 13 14, 右： 7 8
+calc_list (28)
+    左： 15 16 17 18 19 20, 右： 0 16 17 18 19 20
 
 
 State 0
 
     0 $accept: . calc_list $end
 
-    $default  reduce using rule 12 (calc_list)
+    $default  reduce using rule 15 (calc_list)
 
     calc_list  转到状态 1
 
@@ -87,10 +94,11 @@ State 0
 State 1
 
     0 $accept: calc_list . $end
-   13 calc_list: calc_list . EOL
-   14          | calc_list . stmt EOL
-   15          | calc_list . error EOL
-   16          | calc_list . EOF_
+   16 calc_list: calc_list . EOL
+   17          | calc_list . stmt EOL
+   18          | calc_list . error EOL
+   19          | calc_list . EOF_
+   20          | calc_list . EXIT
 
     $end   shift, and go to state 2
     error  shift, and go to state 3
@@ -98,16 +106,20 @@ State 1
     LET    shift, and go to state 5
     PRINT  shift, and go to state 6
     LOAD   shift, and go to state 7
-    BETA   shift, and go to state 8
-    BETA_  shift, and go to state 9
-    EOL    shift, and go to state 10
-    EOF_   shift, and go to state 11
-    '\\'   shift, and go to state 12
-    '('    shift, and go to state 13
+    DIR    shift, and go to state 8
+    EXIT   shift, and go to state 9
+    HELP   shift, and go to state 10
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    EOL    shift, and go to state 14
+    EOF_   shift, and go to state 15
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
 
-    stmt       转到状态 14
-    term_list  转到状态 15
-    term       转到状态 16
+    stmt       转到状态 18
+    term_list  转到状态 19
+    term       转到状态 20
 
 
 State 2
@@ -119,305 +131,378 @@ State 2
 
 State 3
 
-   15 calc_list: calc_list error . EOL
+   18 calc_list: calc_list error . EOL
 
-    EOL  shift, and go to state 17
+    EOL  shift, and go to state 21
 
 
 State 4
 
-    7 term: ID .
+    9 term: ID .
 
-    $default  reduce using rule 7 (term)
+    $default  reduce using rule 9 (term)
 
 
 State 5
 
     1 stmt: LET . ID '=' term_list
 
-    ID  shift, and go to state 18
+    ID  shift, and go to state 22
 
 
 State 6
 
     2 stmt: PRINT . ID
 
-    ID  shift, and go to state 19
+    ID  shift, and go to state 23
 
 
 State 7
 
     3 stmt: LOAD . ID
 
-    ID  shift, and go to state 20
+    ID  shift, and go to state 24
 
 
 State 8
 
-   11 term: BETA . term_list
+    5 stmt: DIR .
 
-    ID     shift, and go to state 4
-    BETA   shift, and go to state 8
-    BETA_  shift, and go to state 9
-    '\\'   shift, and go to state 12
-    '('    shift, and go to state 13
-
-    term_list  转到状态 21
-    term       转到状态 16
+    $default  reduce using rule 5 (stmt)
 
 
 State 9
 
-   10 term: BETA_ . term_list
+   20 calc_list: calc_list EXIT .
 
-    ID     shift, and go to state 4
-    BETA   shift, and go to state 8
-    BETA_  shift, and go to state 9
-    '\\'   shift, and go to state 12
-    '('    shift, and go to state 13
-
-    term_list  转到状态 22
-    term       转到状态 16
+    $default  reduce using rule 20 (calc_list)
 
 
 State 10
 
-   13 calc_list: calc_list EOL .
+    6 stmt: HELP .
 
-    $default  reduce using rule 13 (calc_list)
+    $default  reduce using rule 6 (stmt)
 
 
 State 11
 
-   16 calc_list: calc_list EOF_ .
+   14 term: ALPHA . term_list
 
-    $default  reduce using rule 16 (calc_list)
+    ID     shift, and go to state 4
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
+
+    term_list  转到状态 25
+    term       转到状态 20
 
 
 State 12
 
-    8 term: '\\' . ID '.' term_list
+   13 term: BETA . term_list
 
-    ID  shift, and go to state 23
+    ID     shift, and go to state 4
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
+
+    term_list  转到状态 26
+    term       转到状态 20
 
 
 State 13
 
-    9 term: '(' . term_list ')'
+   12 term: BETA_ . term_list
 
     ID     shift, and go to state 4
-    BETA   shift, and go to state 8
-    BETA_  shift, and go to state 9
-    '\\'   shift, and go to state 12
-    '('    shift, and go to state 13
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
 
-    term_list  转到状态 24
-    term       转到状态 16
+    term_list  转到状态 27
+    term       转到状态 20
 
 
 State 14
 
-   14 calc_list: calc_list stmt . EOL
+   16 calc_list: calc_list EOL .
 
-    EOL  shift, and go to state 25
+    $default  reduce using rule 16 (calc_list)
 
 
 State 15
 
-    4 stmt: term_list .
-    6 term_list: term_list . term
+   19 calc_list: calc_list EOF_ .
 
-    ID     shift, and go to state 4
-    BETA   shift, and go to state 8
-    BETA_  shift, and go to state 9
-    '\\'   shift, and go to state 12
-    '('    shift, and go to state 13
-
-    $default  reduce using rule 4 (stmt)
-
-    term  转到状态 26
+    $default  reduce using rule 19 (calc_list)
 
 
 State 16
 
-    5 term_list: term .
+   10 term: '\\' . ID '.' term_list
 
-    $default  reduce using rule 5 (term_list)
+    ID  shift, and go to state 28
 
 
 State 17
 
-   15 calc_list: calc_list error EOL .
+   11 term: '(' . term_list ')'
 
-    $default  reduce using rule 15 (calc_list)
+    ID     shift, and go to state 4
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
+
+    term_list  转到状态 29
+    term       转到状态 20
 
 
 State 18
 
-    1 stmt: LET ID . '=' term_list
+   17 calc_list: calc_list stmt . EOL
 
-    '='  shift, and go to state 27
+    EOL  shift, and go to state 30
 
 
 State 19
+
+    4 stmt: term_list .
+    8 term_list: term_list . term
+
+    ID     shift, and go to state 4
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
+
+    $default  reduce using rule 4 (stmt)
+
+    term  转到状态 31
+
+
+State 20
+
+    7 term_list: term .
+
+    $default  reduce using rule 7 (term_list)
+
+
+State 21
+
+   18 calc_list: calc_list error EOL .
+
+    $default  reduce using rule 18 (calc_list)
+
+
+State 22
+
+    1 stmt: LET ID . '=' term_list
+
+    '='  shift, and go to state 32
+
+
+State 23
 
     2 stmt: PRINT ID .
 
     $default  reduce using rule 2 (stmt)
 
 
-State 20
+State 24
 
     3 stmt: LOAD ID .
 
     $default  reduce using rule 3 (stmt)
 
 
-State 21
+State 25
 
-    6 term_list: term_list . term
-   11 term: BETA term_list .
+    8 term_list: term_list . term
+   14 term: ALPHA term_list .
 
     ID     shift, and go to state 4
-    BETA   shift, and go to state 8
-    BETA_  shift, and go to state 9
-    '\\'   shift, and go to state 12
-    '('    shift, and go to state 13
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
 
-    ID        [reduce using rule 11 (term)]
-    BETA      [reduce using rule 11 (term)]
-    BETA_     [reduce using rule 11 (term)]
-    '\\'      [reduce using rule 11 (term)]
-    '('       [reduce using rule 11 (term)]
+    ID        [reduce using rule 14 (term)]
+    ALPHA     [reduce using rule 14 (term)]
+    BETA      [reduce using rule 14 (term)]
+    BETA_     [reduce using rule 14 (term)]
+    '\\'      [reduce using rule 14 (term)]
+    '('       [reduce using rule 14 (term)]
+    $default  reduce using rule 14 (term)
+
+    term  转到状态 31
+
+
+State 26
+
+    8 term_list: term_list . term
+   13 term: BETA term_list .
+
+    ID     shift, and go to state 4
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
+
+    ID        [reduce using rule 13 (term)]
+    ALPHA     [reduce using rule 13 (term)]
+    BETA      [reduce using rule 13 (term)]
+    BETA_     [reduce using rule 13 (term)]
+    '\\'      [reduce using rule 13 (term)]
+    '('       [reduce using rule 13 (term)]
+    $default  reduce using rule 13 (term)
+
+    term  转到状态 31
+
+
+State 27
+
+    8 term_list: term_list . term
+   12 term: BETA_ term_list .
+
+    ID     shift, and go to state 4
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
+
+    ID        [reduce using rule 12 (term)]
+    ALPHA     [reduce using rule 12 (term)]
+    BETA      [reduce using rule 12 (term)]
+    BETA_     [reduce using rule 12 (term)]
+    '\\'      [reduce using rule 12 (term)]
+    '('       [reduce using rule 12 (term)]
+    $default  reduce using rule 12 (term)
+
+    term  转到状态 31
+
+
+State 28
+
+   10 term: '\\' ID . '.' term_list
+
+    '.'  shift, and go to state 33
+
+
+State 29
+
+    8 term_list: term_list . term
+   11 term: '(' term_list . ')'
+
+    ID     shift, and go to state 4
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
+    ')'    shift, and go to state 34
+
+    term  转到状态 31
+
+
+State 30
+
+   17 calc_list: calc_list stmt EOL .
+
+    $default  reduce using rule 17 (calc_list)
+
+
+State 31
+
+    8 term_list: term_list term .
+
+    $default  reduce using rule 8 (term_list)
+
+
+State 32
+
+    1 stmt: LET ID '=' . term_list
+
+    ID     shift, and go to state 4
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
+
+    term_list  转到状态 35
+    term       转到状态 20
+
+
+State 33
+
+   10 term: '\\' ID '.' . term_list
+
+    ID     shift, and go to state 4
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
+
+    term_list  转到状态 36
+    term       转到状态 20
+
+
+State 34
+
+   11 term: '(' term_list ')' .
+
     $default  reduce using rule 11 (term)
 
-    term  转到状态 26
 
+State 35
 
-State 22
-
-    6 term_list: term_list . term
-   10 term: BETA_ term_list .
+    1 stmt: LET ID '=' term_list .
+    8 term_list: term_list . term
 
     ID     shift, and go to state 4
-    BETA   shift, and go to state 8
-    BETA_  shift, and go to state 9
-    '\\'   shift, and go to state 12
-    '('    shift, and go to state 13
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
+
+    $default  reduce using rule 1 (stmt)
+
+    term  转到状态 31
+
+
+State 36
+
+    8 term_list: term_list . term
+   10 term: '\\' ID '.' term_list .
+
+    ID     shift, and go to state 4
+    ALPHA  shift, and go to state 11
+    BETA   shift, and go to state 12
+    BETA_  shift, and go to state 13
+    '\\'   shift, and go to state 16
+    '('    shift, and go to state 17
 
     ID        [reduce using rule 10 (term)]
+    ALPHA     [reduce using rule 10 (term)]
     BETA      [reduce using rule 10 (term)]
     BETA_     [reduce using rule 10 (term)]
     '\\'      [reduce using rule 10 (term)]
     '('       [reduce using rule 10 (term)]
     $default  reduce using rule 10 (term)
 
-    term  转到状态 26
-
-
-State 23
-
-    8 term: '\\' ID . '.' term_list
-
-    '.'  shift, and go to state 28
-
-
-State 24
-
-    6 term_list: term_list . term
-    9 term: '(' term_list . ')'
-
-    ID     shift, and go to state 4
-    BETA   shift, and go to state 8
-    BETA_  shift, and go to state 9
-    '\\'   shift, and go to state 12
-    '('    shift, and go to state 13
-    ')'    shift, and go to state 29
-
-    term  转到状态 26
-
-
-State 25
-
-   14 calc_list: calc_list stmt EOL .
-
-    $default  reduce using rule 14 (calc_list)
-
-
-State 26
-
-    6 term_list: term_list term .
-
-    $default  reduce using rule 6 (term_list)
-
-
-State 27
-
-    1 stmt: LET ID '=' . term_list
-
-    ID     shift, and go to state 4
-    BETA   shift, and go to state 8
-    BETA_  shift, and go to state 9
-    '\\'   shift, and go to state 12
-    '('    shift, and go to state 13
-
-    term_list  转到状态 30
-    term       转到状态 16
-
-
-State 28
-
-    8 term: '\\' ID '.' . term_list
-
-    ID     shift, and go to state 4
-    BETA   shift, and go to state 8
-    BETA_  shift, and go to state 9
-    '\\'   shift, and go to state 12
-    '('    shift, and go to state 13
-
-    term_list  转到状态 31
-    term       转到状态 16
-
-
-State 29
-
-    9 term: '(' term_list ')' .
-
-    $default  reduce using rule 9 (term)
-
-
-State 30
-
-    1 stmt: LET ID '=' term_list .
-    6 term_list: term_list . term
-
-    ID     shift, and go to state 4
-    BETA   shift, and go to state 8
-    BETA_  shift, and go to state 9
-    '\\'   shift, and go to state 12
-    '('    shift, and go to state 13
-
-    $default  reduce using rule 1 (stmt)
-
-    term  转到状态 26
-
-
-State 31
-
-    6 term_list: term_list . term
-    8 term: '\\' ID '.' term_list .
-
-    ID     shift, and go to state 4
-    BETA   shift, and go to state 8
-    BETA_  shift, and go to state 9
-    '\\'   shift, and go to state 12
-    '('    shift, and go to state 13
-
-    ID        [reduce using rule 8 (term)]
-    BETA      [reduce using rule 8 (term)]
-    BETA_     [reduce using rule 8 (term)]
-    '\\'      [reduce using rule 8 (term)]
-    '('       [reduce using rule 8 (term)]
-    $default  reduce using rule 8 (term)
-
-    term  转到状态 26
+    term  转到状态 31
